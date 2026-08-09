@@ -37,6 +37,12 @@ Or make it automatic:
 GHOSTNODE=audit node app.js
 ```
 
+Or scan an app from the outside:
+
+```bash
+npx ghostnode scan -- node server.js
+```
+
 Low-level protection is still available:
 
 ```js
@@ -103,6 +109,23 @@ import { createExpressMiddleware } from "ghostnode";
 app.use(createExpressMiddleware());
 ```
 
+## Logger Protection
+
+```js
+import { createSafeLogger } from "ghostnode/logger";
+
+const safeLogger = createSafeLogger(logger, {
+  mode: "redact"
+});
+
+safeLogger.info({
+  email: "john@example.com",
+  authorization: "Bearer token-value"
+});
+```
+
+That wrapper works with ordinary log-shaped objects and keeps the logger path aligned with the same `audit` / `redact` / `block` policy model.
+
 ## Modes
 
 - `audit`: detect and report leaks, but allow the original operation
@@ -166,10 +189,9 @@ V1 is intentionally small but already useful.
 
 Next obvious expansions:
 
-- structured logger adapters
+- first-class `pino` / `winston` adapters
 - source-aware leak tracing
 - telemetry and error reporter integrations
-- CLI privacy scan mode
 
 > GhostNode
 > Your data was never there.

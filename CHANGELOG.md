@@ -2,7 +2,7 @@
 
 All notable changes to `ghostnode` are documented here.
 
-## [0.2.0] - 2026-08-09
+## [0.3.0] - 2026-08-09
 
 ### Added
 
@@ -13,3 +13,5 @@ All notable changes to `ghostnode` are documented here.
 - Runtime firewall mode with `audit`, `redact`, and `block` policies for `fetch` and `console`.
 - Structured leak findings and `installGhostNode(...)` bootstrapping, including `GHOSTNODE=<mode>` support.
 - HTTP edge helpers for sanitized requests, fetch proxying, and Express-style middleware snapshots.
+- Safe logger wrapping with the same `audit` / `redact` / `block` policy surface.
+- `ghostnode scan` CLI for preloading the firewall into a child Node process and printing a privacy scan summary.
