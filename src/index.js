@@ -8,7 +8,7 @@ export {
   sanitizeHeaders,
   sanitizeRequest
 } from "./http.js";
-export { createSafeLogger } from "./logger.js";
+export { createPinoLogger, createSafeLogger, createWinstonLogger } from "./logger.js";
 export { getActiveGhostNode, installGhostNode, uninstallGhostNode } from "./firewall.js";
 
 const envMode = process.env.GHOSTNODE;

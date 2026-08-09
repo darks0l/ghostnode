@@ -6,8 +6,6 @@ Built by DARKSOL 🌑
 
 Nó theo dõi các ranh giới đi ra ngoài và cảnh báo khi dữ liệu nhạy cảm sắp rời khỏi tiến trình của bạn.
 
-Hãy nghĩ tới HTTP request, log, analytics, telemetry, lệnh gọi AI và output debug.
-
 ## Ngôn ngữ
 
 - [English](https://github.com/darks0l/ghostnode/blob/main/README.md)
@@ -17,52 +15,20 @@ Hãy nghĩ tới HTTP request, log, analytics, telemetry, lệnh gọi AI và ou
 - [日本語](https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.ja.md)
 - Tiếng Việt
 
-## Cài đặt
+## Khả năng hiện tại
 
-```bash
-npm install ghostnode
-```
+- `fetch`
+- `console`
+- logger tổng quát
+- `createPinoLogger(...)`
+- `createWinstonLogger(...)`
+- xuất báo cáo JSON với `ghostnode scan`
 
-## Bắt đầu nhanh
+## Ghi chú dịch thuật
 
-```js
-import { installGhostNode } from "ghostnode";
+Rất hoan nghênh cải thiện thêm bản dịch.
 
-installGhostNode({
-  mode: "audit",
-  onEvent(event) {
-    console.error("GhostNode đã phát hiện rò rỉ tiềm năng", event);
-  }
-});
-```
-
-Hoặc bật tự động:
-
-```bash
-GHOSTNODE=audit node app.js
-```
-
-Hoặc quét một tiến trình Node từ bên ngoài:
-
-```bash
-npx ghostnode scan -- node server.js
-```
-
-## Chế độ
-
-- `audit`: phát hiện và báo cáo rò rỉ nhưng vẫn cho phép chạy
-- `redact`: làm sạch dữ liệu nhạy cảm rồi mới cho phép chạy
-- `block`: chặn thao tác khi phát hiện rò rỉ
-
-## Các bề mặt hiện tại
-
-- bảo vệ `fetch`
-- bảo vệ `console`
-- bảo vệ logger với `createSafeLogger(...)`
-- helper HTTP đã được làm sạch
-- chế độ CLI `ghostnode scan`
-
-## Lời hứa cốt lõi
+README chính giữ gọn bằng tiếng Anh, còn bản dịch đầy đủ nằm trong `docs/i18n/`.
 
 > GhostNode phát hiện dữ liệu nhạy cảm rời khỏi ứng dụng Node.js của bạn.
 

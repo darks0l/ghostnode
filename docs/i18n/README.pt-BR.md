@@ -13,6 +13,9 @@ Pense em requisições HTTP, logs, analytics, telemetria, chamadas para IA e sa�
 - [English](https://github.com/darks0l/ghostnode/blob/main/README.md)
 - [Español](https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.es.md)
 - Português (Brasil)
+- [中文](https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.zh-CN.md)
+- [日本語](https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.ja.md)
+- [Tiếng Việt](https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.vi.md)
 
 ## Instalação
 
@@ -33,38 +36,27 @@ installGhostNode({
 });
 ```
 
-Ou automático:
+## Superfícies atuais
 
-```bash
-GHOSTNODE=audit node app.js
-```
-
-Ou escaneando um app de fora:
-
-```bash
-npx ghostnode scan -- node server.js
-```
+- `fetch`
+- `console`
+- loggers genéricos
+- `pino` com `createPinoLogger(...)`
+- `winston` com `createWinstonLogger(...)`
+- `ghostnode scan` com exportação JSON
 
 ## Modos
 
-- `audit`: detecta e reporta vazamentos, mas permite a operação
-- `redact`: sanitiza dados sensíveis e depois permite a operação
-- `block`: interrompe a operação quando detecta um vazamento
+- `audit`
+- `redact`
+- `block`
 
-## Superfícies atuais
+## Nota sobre traduções
 
-- proteção de `fetch`
-- proteção de `console`
-- proteção de logger com `createSafeLogger(...)`
-- helper HTTP para requisições sanitizadas
-- `ghostnode scan` para escanear outro processo Node
+Traduções são bem-vindas.
 
-## Promessa central
+O README principal continua compacto em inglês e as traduções completas vivem em `docs/i18n/`.
 
 > GhostNode detecta dados sensíveis saindo da sua aplicação Node.js.
-
-## Nota
-
-A documentação principal continua em inglês. Essas páginas de idioma deixam a entrada mais acessível sem poluir o README principal.
 
 Built with teeth. 🌑

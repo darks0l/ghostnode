@@ -53,88 +53,24 @@ Or export a machine-readable report:
 npx ghostnode scan --mode audit --report ghostnode-report.json -- node server.js
 ```
 
-Low-level protection is still available:
+## Boundaries
+
+- `fetch`
+- `console`
+- generic logger objects
+- `pino` via `createPinoLogger(...)`
+- `winston` via `createWinstonLogger(...)`
+
+## Logger Adapters
 
 ```js
-import { ghost } from "ghostnode";
+import { createPinoLogger, createWinstonLogger } from "ghostnode";
 
-const safe = ghost({
-  email: "john@example.com",
-  ip: "192.168.1.42",
-  apiKey: "sk-secret123",
-  message: "Hello world"
-});
-
-console.log(safe);
+const safePino = createPinoLogger(pinoLogger, { mode: "redact" });
+const safeWinston = createWinstonLogger(winstonLogger, { mode: "audit" });
 ```
 
-Output:
-
-```js
-{
-  email: "[REDACTED]",
-  ip: "[REDACTED]",
-  apiKey: "[REDACTED]",
-  message: "Hello world"
-}
-```
-
-## Shield Mode
-
-```js
-import "ghostnode/shield";
-
-console.log({
-  authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload.signature",
-  email: "john@example.com"
-});
-```
-
-That one import patches the standard console methods and sanitizes outgoing log arguments before they are formatted.
-
-## HTTP Edge Protection
-
-```js
-import { createFetchProxy } from "ghostnode/http";
-
-const safeFetch = createFetchProxy();
-
-await safeFetch("https://api.example.com/send?email=john@example.com", {
-  method: "POST",
-  headers: {
-    authorization: "Bearer token-value"
-  },
-  body: JSON.stringify({
-    password: "hunter2",
-    note: "ship it"
-  })
-});
-```
-
-You can also attach a sanitized request snapshot inside Express-style middleware:
-
-```js
-import { createExpressMiddleware } from "ghostnode";
-
-app.use(createExpressMiddleware());
-```
-
-## Logger Protection
-
-```js
-import { createSafeLogger } from "ghostnode/logger";
-
-const safeLogger = createSafeLogger(logger, {
-  mode: "redact"
-});
-
-safeLogger.info({
-  email: "john@example.com",
-  authorization: "Bearer token-value"
-});
-```
-
-That wrapper works with ordinary log-shaped objects and keeps the logger path aligned with the same `audit` / `redact` / `block` policy model.
+These adapters keep the same `audit` / `redact` / `block` model while giving backend teams a clearer drop-in path.
 
 ## Modes
 
@@ -154,55 +90,27 @@ The promise stays simple:
 
 > GhostNode detects sensitive data leaving your Node.js application.
 
-## What It Redacts
+## Scan Reports
 
-- emails
-- IPv4 and IPv6 addresses
-- bearer tokens and authorization values
-- API keys and secret-like tokens
-- JWTs
-- cookies
-- passwords and passphrases
-- card-like values with a Luhn check
-- custom secrets and custom sensitive keys
+`ghostnode scan` can now write JSON output with severity counts and full event detail:
 
-## API
+```bash
+npx ghostnode scan --mode audit --report ghostnode-report.json -- node app.js
+```
 
-### `ghost(value, options?)`
+## Translation Note
 
-Returns a sanitized clone of the input value.
+Translations are welcome.
 
-Options:
-
-- `replacement`: string used instead of sensitive values. Defaults to `"[REDACTED]"`.
-- `sensitiveKeys`: additional keys or regexes that should always redact the full value.
-- `secrets`: string or regex secrets that should be scrubbed inline.
-
-### `createGhost(options?)`
-
-Builds a reusable sanitizer with the same options.
-
-### `inspect(value, options?)`
-
-Returns `{ value, findings }` so you can examine what GhostNode detected.
-
-### `installGhostNode(options?)`
-
-Installs runtime boundary protection for `fetch` and `console`.
-
-### `installShield(options?)`
-
-Available from `ghostnode/shield`. Patches console methods and returns a cleanup handle.
+The main README stays compact in English, and full translations live under [`docs/i18n/`](https://github.com/darks0l/ghostnode/tree/main/docs/i18n) so the landing page stays clean.
 
 ## Direction
 
-V1 is intentionally small but already useful.
-
 Next obvious expansions:
 
-- first-class `pino` / `winston` adapters
 - source-aware leak tracing
 - telemetry and error reporter integrations
+- richer severity policies
 
 > GhostNode
 > Your data was never there.

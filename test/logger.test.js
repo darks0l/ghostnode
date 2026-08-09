@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createSafeLogger } from "../src/index.js";
+import { createPinoLogger, createSafeLogger, createWinstonLogger } from "../src/index.js";
 
 test("createSafeLogger audit mode reports findings and allows original log", () => {
   const calls = [];
@@ -75,4 +75,32 @@ test("createSafeLogger wraps child loggers too", () => {
   safeChild.info({ cookie: "session=abc123" });
 
   assert.deepEqual(calls[0][0], { cookie: "[REDACTED]" });
+});
+
+test("createPinoLogger exposes the same safe logging behavior", () => {
+  const calls = [];
+  const logger = {
+    info(...args) {
+      calls.push(args);
+    }
+  };
+
+  const safeLogger = createPinoLogger(logger, { mode: "redact" });
+  safeLogger.info({ authorization: "Bearer token-value" });
+
+  assert.deepEqual(calls[0][0], { authorization: "[REDACTED]" });
+});
+
+test("createWinstonLogger exposes the same safe logging behavior", () => {
+  const calls = [];
+  const logger = {
+    warn(...args) {
+      calls.push(args);
+    }
+  };
+
+  const safeLogger = createWinstonLogger(logger, { mode: "redact" });
+  safeLogger.warn({ email: "john@example.com" });
+
+  assert.deepEqual(calls[0][0], { email: "[REDACTED]" });
 });

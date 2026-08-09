@@ -2,7 +2,7 @@
 
 All notable changes to `ghostnode` are documented here.
 
-## [0.4.0] - 2026-08-09
+## [0.5.0] - 2026-08-09
 
 ### Added
 
@@ -19,3 +19,5 @@ All notable changes to `ghostnode` are documented here.
 - Severity scoring for findings and scan summaries.
 - `ghostnode scan --report ...` JSON export for machine-readable scan output.
 - Chinese, Japanese, and Vietnamese translation pages.
+- First-class `createPinoLogger(...)` and `createWinstonLogger(...)` adapter surfaces.
+- README refresh across all language pages with a small translation welcome note.

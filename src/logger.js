@@ -41,47 +41,54 @@ function emitEvent(onEvent, event) {
   }
 }
 
+function createMethodProxy(targetLogger, methodName, options, mode) {
+  const original = targetLogger[methodName];
+  if (typeof original !== "function") {
+    return undefined;
+  }
+
+  return function ghostnodeSafeLogger(...args) {
+    const inspected = inspectLoggerArgs(args, options);
+    if (inspected.findings.length > 0) {
+      const event = {
+        boundary: "logger",
+        method: String(methodName),
+        destination: `logger.${String(methodName)}`,
+        findings: inspected.findings,
+        action: mode
+      };
+      emitEvent(options.onEvent, event);
+
+      if (mode === "block") {
+        return;
+      }
+
+      if (mode === "redact") {
+        return original.apply(targetLogger, inspected.sanitizedArgs);
+      }
+    }
+
+    return original.apply(targetLogger, args);
+  };
+}
+
 export function createSafeLogger(targetLogger, options = {}) {
   if (!targetLogger || typeof targetLogger !== "object") {
     throw new Error("ghostnode: createSafeLogger requires a logger object");
   }
 
   const mode = normalizeMode(options.mode);
-
   const proxy = {};
+
   for (const key of Reflect.ownKeys(targetLogger)) {
     if (!LOGGER_METHODS.includes(String(key))) {
       continue;
     }
 
-    const original = targetLogger[key];
-    if (typeof original !== "function") {
-      continue;
+    const methodProxy = createMethodProxy(targetLogger, key, options, mode);
+    if (methodProxy) {
+      proxy[key] = methodProxy;
     }
-
-    proxy[key] = function ghostnodeSafeLogger(...args) {
-      const inspected = inspectLoggerArgs(args, options);
-      if (inspected.findings.length > 0) {
-        const event = {
-          boundary: "logger",
-          method: String(key),
-          destination: `logger.${String(key)}`,
-          findings: inspected.findings,
-          action: mode
-        };
-        emitEvent(options.onEvent, event);
-
-        if (mode === "block") {
-          return;
-        }
-
-        if (mode === "redact") {
-          return original.apply(targetLogger, inspected.sanitizedArgs);
-        }
-      }
-
-      return original.apply(targetLogger, args);
-    };
   }
 
   if (typeof targetLogger.child === "function") {
@@ -104,4 +111,12 @@ export function createSafeLogger(targetLogger, options = {}) {
       return value;
     }
   });
+}
+
+export function createPinoLogger(targetLogger, options = {}) {
+  return createSafeLogger(targetLogger, options);
+}
+
+export function createWinstonLogger(targetLogger, options = {}) {
+  return createSafeLogger(targetLogger, options);
 }
