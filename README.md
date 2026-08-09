@@ -6,6 +6,10 @@ Built by DARKSOL 🌑
   <img src="https://raw.githubusercontent.com/darks0l/ghostnode/main/assets/darksol-banner.png" alt="DARKSOL banner" width="100%"/>
 </p>
 
+<p align="center">
+  English · <a href="https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.es.md">Español</a> · <a href="https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.pt-BR.md">Português (Brasil)</a>
+</p>
+
 `ghostnode` is a privacy firewall for Node.js apps.
 
 It watches outbound boundaries and tells you when sensitive data is about to leave your process.
