@@ -1,0 +1,48 @@
+{
+  "name": "ghostnode",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Tiny privacy proxy for Node.js apps with recursive redaction and console shielding.",
+  "license": "MIT",
+  "author": "DARKSOL",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./shield": "./src/shield.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "assets/darksol-banner.png"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test",
+    "lint": "node --test",
+    "prepublishOnly": "npm test && npm pack --dry-run"
+  },
+  "keywords": [
+    "privacy",
+    "security",
+    "redaction",
+    "pii",
+    "token-sanitization",
+    "telemetry",
+    "logging",
+    "node"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darks0l/ghostnode.git"
+  },
+  "homepage": "https://github.com/darks0l/ghostnode#readme",
+  "bugs": {
+    "url": "https://github.com/darks0l/ghostnode/issues"
+  }
+}
