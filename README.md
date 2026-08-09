@@ -7,7 +7,7 @@ Built by DARKSOL 🌑
 </p>
 
 <p align="center">
-  English · <a href="https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.es.md">Español</a> · <a href="https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.pt-BR.md">Português (Brasil)</a>
+  English · <a href="https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.es.md">Español</a> · <a href="https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.pt-BR.md">Português (Brasil)</a> · <a href="https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.zh-CN.md">中文</a> · <a href="https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.ja.md">日本語</a> · <a href="https://github.com/darks0l/ghostnode/blob/main/docs/i18n/README.vi.md">Tiếng Việt</a>
 </p>
 
 `ghostnode` is a privacy firewall for Node.js apps.
@@ -30,7 +30,7 @@ import { installGhostNode } from "ghostnode";
 installGhostNode({
   mode: "audit",
   onEvent(event) {
-    console.error("GhostNode blocked a potential data leak", event);
+    console.error("GhostNode detected a potential data leak", event);
   }
 });
 ```
@@ -45,6 +45,12 @@ Or scan an app from the outside:
 
 ```bash
 npx ghostnode scan -- node server.js
+```
+
+Or export a machine-readable report:
+
+```bash
+npx ghostnode scan --mode audit --report ghostnode-report.json -- node server.js
 ```
 
 Low-level protection is still available:
@@ -133,7 +139,7 @@ That wrapper works with ordinary log-shaped objects and keeps the logger path al
 ## Modes
 
 - `audit`: detect and report leaks, but allow the original operation
-- `redact`: sanitize detected data, then allow the operation
+- `redact`: sanitize detected data, then allow the original operation
 - `block`: stop the operation when a leak is detected
 
 Every detection can emit a structured event with:
@@ -141,6 +147,7 @@ Every detection can emit a structured event with:
 - boundary
 - destination
 - findings
+- severity
 - action taken
 
 The promise stays simple:

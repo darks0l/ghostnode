@@ -135,10 +135,28 @@ function looksSensitiveKey(key, options) {
 function pushFinding(findings, finding) {
   findings.push({
     type: finding.type,
+    severity: finding.severity ?? severityForType(finding.type),
     path: finding.path ?? "",
     source: finding.source ?? "value",
     preview: finding.preview ?? undefined
   });
+}
+
+function severityForType(type) {
+  switch (type) {
+    case "password":
+    case "secret":
+    case "token":
+    case "jwt":
+    case "cookie":
+      return "high";
+    case "card":
+    case "email":
+    case "ip":
+      return "medium";
+    default:
+      return "low";
+  }
 }
 
 function analyzeString(text, options, path, findings) {
@@ -293,3 +311,5 @@ export const defaults = {
   replacement: DEFAULT_REPLACEMENT,
   sensitiveKeyPatterns: SENSITIVE_KEY_PATTERNS
 };
+
+export { severityForType };

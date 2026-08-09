@@ -2,7 +2,7 @@
 
 All notable changes to `ghostnode` are documented here.
 
-## [0.3.2] - 2026-08-09
+## [0.4.0] - 2026-08-09
 
 ### Added
 
@@ -16,3 +16,6 @@ All notable changes to `ghostnode` are documented here.
 - Safe logger wrapping with the same `audit` / `redact` / `block` policy surface.
 - `ghostnode scan` CLI for preloading the firewall into a child Node process and printing a privacy scan summary.
 - Clean multilingual README navigation with dedicated translation pages.
+- Severity scoring for findings and scan summaries.
+- `ghostnode scan --report ...` JSON export for machine-readable scan output.
+- Chinese, Japanese, and Vietnamese translation pages.

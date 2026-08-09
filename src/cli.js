@@ -9,38 +9,87 @@ function printHelp() {
   process.stdout.write(`ghostnode
 
 Usage:
-  ghostnode scan [--mode audit|redact|block] -- <command> [args...]
+  ghostnode scan [--mode audit|redact|block] [--report <file>] -- <command> [args...]
   ghostnode scan <command> [args...]
 
 Examples:
   ghostnode scan -- node server.js
   ghostnode scan --mode redact -- npm start
+  ghostnode scan --mode audit --report ghostnode-report.json -- npm run dev
 `);
 }
 
-function summarize(events) {
-  const counts = new Map();
-  for (const event of events) {
-    for (const finding of event.findings ?? []) {
-      counts.set(finding.type, (counts.get(finding.type) ?? 0) + 1);
+function severityRank(value) {
+  switch (value) {
+    case "high":
+      return 3;
+    case "medium":
+      return 2;
+    default:
+      return 1;
+  }
+}
+
+function highestSeverity(findings) {
+  let highest = "low";
+  for (const finding of findings ?? []) {
+    if (severityRank(finding.severity) > severityRank(highest)) {
+      highest = finding.severity;
     }
   }
+  return highest;
+}
+
+function buildReport(events) {
+  const severityCounts = { high: 0, medium: 0, low: 0 };
+  const typeCounts = {};
+
+  for (const event of events) {
+    const seenEventSeverities = new Set();
+    for (const finding of event.findings ?? []) {
+      typeCounts[finding.type] = (typeCounts[finding.type] ?? 0) + 1;
+      seenEventSeverities.add(finding.severity ?? "low");
+    }
+    for (const severity of seenEventSeverities) {
+      severityCounts[severity] = (severityCounts[severity] ?? 0) + 1;
+    }
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    totalEvents: events.length,
+    severityCounts,
+    typeCounts,
+    events: events.map((event) => ({
+      ...event,
+      highestSeverity: highestSeverity(event.findings)
+    }))
+  };
+}
+
+function summarize(events) {
+  const report = buildReport(events);
 
   const lines = [];
   lines.push("GhostNode Privacy Scan");
   lines.push("");
-  lines.push(`${events.length} potential leak event(s) detected`);
+  lines.push(`${report.totalEvents} potential leak event(s) detected`);
+  lines.push(
+    `Severity: HIGH ${report.severityCounts.high} · MEDIUM ${report.severityCounts.medium} · LOW ${report.severityCounts.low}`
+  );
   lines.push("");
 
-  for (const event of events.slice(0, 10)) {
+  for (const event of report.events.slice(0, 10)) {
     const kinds = [...new Set((event.findings ?? []).map((finding) => finding.type))];
-    lines.push(`${event.action.toUpperCase()} ${kinds.join(", ")} -> ${event.destination}`);
+    lines.push(
+      `${event.action.toUpperCase()} ${event.highestSeverity.toUpperCase()} ${kinds.join(", ")} -> ${event.destination}`
+    );
   }
 
-  if (counts.size > 0) {
+  if (Object.keys(report.typeCounts).length > 0) {
     lines.push("");
     lines.push("Detected types:");
-    for (const [type, count] of counts.entries()) {
+    for (const [type, count] of Object.entries(report.typeCounts)) {
       lines.push(`- ${type}: ${count}`);
     }
   }
@@ -60,6 +109,7 @@ function parseArgs(argv) {
   }
 
   let mode = "audit";
+  let reportPath = null;
   while (args.length > 0) {
     const current = args[0];
     if (current === "--") {
@@ -76,6 +126,16 @@ function parseArgs(argv) {
       args.shift();
       continue;
     }
+    if (current === "--report") {
+      args.shift();
+      reportPath = args.shift() ?? reportPath;
+      continue;
+    }
+    if (current.startsWith("--report=")) {
+      reportPath = current.slice("--report=".length);
+      args.shift();
+      continue;
+    }
     break;
   }
 
@@ -83,7 +143,7 @@ function parseArgs(argv) {
     return { error: "No command provided for scan." };
   }
 
-  return { command: "scan", mode, childCommand: args[0], childArgs: args.slice(1) };
+  return { command: "scan", mode, reportPath, childCommand: args[0], childArgs: args.slice(1) };
 }
 
 function shouldUseShell(command) {
@@ -148,10 +208,17 @@ async function main() {
         .map((line) => JSON.parse(line))
     : [];
 
+  const report = buildReport(events);
+
   if (events.length > 0) {
     process.stderr.write(`\n${summarize(events)}\n`);
   } else {
     process.stderr.write("\nGhostNode Privacy Scan\n\nNo leaks detected.\n");
+  }
+
+  if (parsed.reportPath) {
+    fs.writeFileSync(parsed.reportPath, `${JSON.stringify(report, null, 2)}\n`);
+    process.stderr.write(`Report written to ${parsed.reportPath}\n`);
   }
 
   if (fs.existsSync(reportFile)) {

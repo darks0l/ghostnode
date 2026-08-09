@@ -76,4 +76,6 @@ test("inspect returns structured findings", () => {
   assert.equal(result.findings.length >= 2, true);
   assert.equal(result.findings.some((finding) => finding.type === "email"), true);
   assert.equal(result.findings.some((finding) => finding.type === "token"), true);
+  assert.equal(result.findings.some((finding) => finding.severity === "medium"), true);
+  assert.equal(result.findings.some((finding) => finding.severity === "high"), true);
 });

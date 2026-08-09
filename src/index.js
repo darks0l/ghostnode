@@ -1,6 +1,6 @@
 import { getActiveGhostNode, installGhostNode } from "./firewall.js";
 
-export { createGhost, defaults, ghost, inspect, protect, sanitizeText } from "./core.js";
+export { createGhost, defaults, ghost, inspect, protect, sanitizeText, severityForType } from "./core.js";
 export {
   createExpressMiddleware,
   createFetchProxy,
