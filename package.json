@@ -1,14 +1,15 @@
 {
   "name": "ghostnode",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
-  "description": "Tiny privacy proxy for Node.js apps with recursive redaction and console shielding.",
+  "description": "Privacy firewall for Node.js apps that detects sensitive data leaving your process.",
   "license": "MIT",
   "author": "DARKSOL",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
+    "./http": "./src/http.js",
     "./shield": "./src/shield.js",
     "./package.json": "./package.json"
   },
@@ -30,6 +31,7 @@
   "keywords": [
     "privacy",
     "security",
+    "firewall",
     "redaction",
     "pii",
     "token-sanitization",

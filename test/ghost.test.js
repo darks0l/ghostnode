@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createGhost, ghost, sanitizeText } from "../src/index.js";
+import { createGhost, ghost, inspect, sanitizeText } from "../src/index.js";
 
 test("ghost redacts sensitive keys recursively", () => {
   const result = ghost({
@@ -64,4 +64,16 @@ test("createGhost supports custom secrets and custom keys", () => {
     webhookUrl: "[REDACTED]",
     summary: "Internal codename [REDACTED] should not leak"
   });
+});
+
+test("inspect returns structured findings", () => {
+  const result = inspect({
+    email: "john@example.com",
+    authorization: "Bearer token-value"
+  });
+
+  assert.equal(result.value.email, "[REDACTED]");
+  assert.equal(result.findings.length >= 2, true);
+  assert.equal(result.findings.some((finding) => finding.type === "email"), true);
+  assert.equal(result.findings.some((finding) => finding.type === "token"), true);
 });
