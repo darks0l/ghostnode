@@ -1,5 +1,6 @@
 import { inspect } from "./core.js";
 import { inspectRequest } from "./http.js";
+import { captureSourceContext } from "./source-context.js";
 
 const CONSOLE_METHODS = ["debug", "dir", "error", "info", "log", "trace", "warn"];
 
@@ -31,6 +32,17 @@ function emitEvent(onEvent, event) {
   if (typeof onEvent === "function") {
     return onEvent(event);
   }
+}
+
+function withSourceContext(event, options) {
+  if (options.captureSource === false) {
+    return event;
+  }
+
+  return {
+    ...event,
+    sourceContext: captureSourceContext()
+  };
 }
 
 function inspectConsoleArgs(args, options) {
@@ -72,7 +84,7 @@ function installConsoleFirewall(options) {
           findings: inspected.findings,
           action: options.mode
         };
-        emitEvent(options.onEvent, event);
+        emitEvent(options.onEvent, withSourceContext(event, options));
 
         if (options.mode === "block") {
           return;
@@ -110,7 +122,7 @@ function installFetchFirewall(options) {
         findings: dedupeFindings(inspected.findings),
         action: options.mode
       };
-      await emitEvent(options.onEvent, event);
+      await emitEvent(options.onEvent, withSourceContext(event, options));
 
       if (options.mode === "block") {
         throw createLeakError(event);
@@ -135,6 +147,8 @@ function installFetchFirewall(options) {
 }
 
 export function installGhostNode(options = {}) {
+  activeFirewall?.uninstall();
+
   const normalized = {
     ...options,
     mode: normalizeMode(options.mode)

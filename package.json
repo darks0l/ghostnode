@@ -2,7 +2,7 @@
   "name": "ghostnode",
   "version": "0.5.0",
   "private": false,
-  "description": "Privacy firewall for Node.js apps that detects sensitive data leaving your process.",
+  "description": "Privacy firewall for Node.js apps that detects, redacts, or blocks sensitive data before it leaves your process.",
   "license": "MIT",
   "author": "DARKSOL",
   "type": "module",
@@ -22,11 +22,9 @@
   "files": [
     "src",
     "docs",
-    "fixtures",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md",
-    "assets/darksol-banner.png"
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=18"
@@ -34,7 +32,8 @@
   "scripts": {
     "test": "node --test",
     "lint": "node --test",
-    "prepublishOnly": "npm test && npm pack --dry-run"
+    "test:artifact": "node scripts/smoke-pack.mjs",
+    "prepublishOnly": "npm test && npm run test:artifact && npm pack --dry-run"
   },
   "keywords": [
     "privacy",

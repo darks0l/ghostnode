@@ -25,6 +25,8 @@ test("createSafeLogger audit mode reports findings and allows original log", () 
   assert.equal(events.length, 1);
   assert.equal(events[0].boundary, "logger");
   assert.equal(events[0].action, "audit");
+  assert.match(events[0].sourceContext.callsite.file, /logger\.test\.js$/);
+  assert.equal(typeof events[0].sourceContext.callsite.line, "number");
 });
 
 test("createSafeLogger redact mode sanitizes sensitive log args", () => {
@@ -103,4 +105,24 @@ test("createWinstonLogger exposes the same safe logging behavior", () => {
   safeLogger.warn({ email: "john@example.com" });
 
   assert.deepEqual(calls[0][0], { email: "[REDACTED]" });
+});
+
+test("createSafeLogger can disable source capture for lower-overhead events", () => {
+  const events = [];
+  const logger = {
+    info() {}
+  };
+
+  const safeLogger = createSafeLogger(logger, {
+    mode: "audit",
+    captureSource: false,
+    onEvent(event) {
+      events.push(event);
+    }
+  });
+
+  safeLogger.info({ email: "john@example.com" });
+
+  assert.equal(events.length, 1);
+  assert.equal("sourceContext" in events[0], false);
 });

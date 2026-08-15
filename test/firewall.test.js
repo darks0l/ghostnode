@@ -40,6 +40,8 @@ test("installGhostNode audit mode reports findings and allows original fetch", a
   assert.equal(events.length, 1);
   assert.equal(events[0].boundary, "fetch");
   assert.equal(events[0].action, "audit");
+  assert.match(events[0].sourceContext.callsite.file, /firewall\.test\.js$/);
+  assert.equal(typeof events[0].sourceContext.callsite.line, "number");
 
   globalThis.fetch = originalFetch;
 });
@@ -133,4 +135,67 @@ test("installGhostNode block mode suppresses console output", () => {
   fakeConsole.log({ email: "john@example.com" });
   assert.equal(calls.length, 0);
   assert.notEqual(getActiveGhostNode(), null);
+});
+
+test("installGhostNode console events include user-land source context", () => {
+  const events = [];
+  const fakeConsole = {
+    log() {}
+  };
+
+  installGhostNode({
+    mode: "audit",
+    fetch: false,
+    console: true,
+    consoleTarget: fakeConsole,
+    onEvent(event) {
+      events.push(event);
+    }
+  });
+
+  fakeConsole.log({ email: "john@example.com" });
+
+  assert.equal(events.length, 1);
+  assert.match(events[0].sourceContext.callsite.file, /firewall\.test\.js$/);
+  assert.equal(typeof events[0].sourceContext.callsite.column, "number");
+});
+
+test("installGhostNode replaces the previous firewall instead of double-wrapping boundaries", async () => {
+  const events = [];
+  const calls = [];
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url, init });
+    return { ok: true, status: 200 };
+  };
+
+  installGhostNode({
+    mode: "audit",
+    fetch: true,
+    console: false
+  });
+
+  installGhostNode({
+    mode: "redact",
+    fetch: true,
+    console: false,
+    onEvent(event) {
+      events.push(event);
+    }
+  });
+
+  await globalThis.fetch("https://api.example.com?email=john@example.com", {
+    headers: {
+      authorization: "Bearer token-value"
+    }
+  });
+
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].url, /%5BREDACTED%5D/);
+  assert.equal(calls[0].init.headers.authorization, "[REDACTED]");
+  assert.equal(events.length, 1);
+  assert.equal(events[0].action, "redact");
+
+  globalThis.fetch = originalFetch;
 });

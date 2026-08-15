@@ -1,6 +1,6 @@
 # ghostnode
 
-Built by DARKSOL 🌑
+Built by DARKSOL
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/darks0l/ghostnode/main/assets/darksol-banner.png" alt="DARKSOL banner" width="100%"/>
@@ -12,9 +12,15 @@ Built by DARKSOL 🌑
 
 `ghostnode` is a privacy firewall for Node.js apps.
 
-It watches outbound boundaries and tells you when sensitive data is about to leave your process.
+It inspects outbound boundaries and helps you detect, redact, or block sensitive data before it leaves your process.
 
-Think HTTP requests, logs, analytics, telemetry, AI calls, and debug output.
+Think:
+
+- HTTP requests
+- logs
+- analytics and telemetry payloads
+- AI and agent calls
+- debug output
 
 ## Install
 
@@ -35,7 +41,7 @@ installGhostNode({
 });
 ```
 
-Or make it automatic:
+You can also preload it automatically:
 
 ```bash
 GHOSTNODE=audit node app.js
@@ -47,19 +53,27 @@ Or scan an app from the outside:
 npx ghostnode scan -- node server.js
 ```
 
-Or export a machine-readable report:
+Or emit a machine-readable report:
 
 ```bash
 npx ghostnode scan --mode audit --report ghostnode-report.json -- node server.js
 ```
 
+## Modes
+
+- `audit`: detect and report leaks, but allow the original operation
+- `redact`: sanitize detected data, then allow the original operation
+- `block`: stop the operation when a leak is detected
+
 ## Boundaries
+
+GhostNode currently covers:
 
 - `fetch`
 - `console`
 - generic logger objects
-- `pino` via `createPinoLogger(...)`
-- `winston` via `createWinstonLogger(...)`
+- `pino` through `createPinoLogger(...)`
+- `winston` through `createWinstonLogger(...)`
 
 ## Logger Adapters
 
@@ -70,49 +84,80 @@ const safePino = createPinoLogger(pinoLogger, { mode: "redact" });
 const safeWinston = createWinstonLogger(winstonLogger, { mode: "audit" });
 ```
 
-These adapters keep the same `audit` / `redact` / `block` model while giving backend teams a clearer drop-in path.
+## HTTP Helpers
 
-## Modes
+```js
+import { createFetchProxy, sanitizeRequest } from "ghostnode";
 
-- `audit`: detect and report leaks, but allow the original operation
-- `redact`: sanitize detected data, then allow the original operation
-- `block`: stop the operation when a leak is detected
+const safeFetch = createFetchProxy({
+  mode: "redact",
+  onRequest(request) {
+    console.log("outbound request", request);
+  }
+});
+
+const sanitized = sanitizeRequest("https://api.example.com?email=john@example.com", {
+  headers: {
+    authorization: "Bearer token-value"
+  }
+});
+```
+
+## What It Detects
+
+Built-in detectors cover:
+
+- emails
+- IP addresses
+- bearer tokens
+- API keys
+- JWTs
+- cookies
+- passwords
+- payment-card-like values
+
+You can also add custom secrets and custom sensitive-key rules.
+
+## Structured Events
 
 Every detection can emit a structured event with:
 
-- boundary
-- destination
-- findings
-- severity
-- action taken
+- `boundary`
+- `destination`
+- `findings`
+- `severity`
+- `action`
 
-The promise stays simple:
-
-> GhostNode detects sensitive data leaving your Node.js application.
+That gives you something useful for logging, tests, CI, and incident review instead of a vague boolean.
 
 ## Scan Reports
 
-`ghostnode scan` can now write JSON output with severity counts and full event detail:
+`ghostnode scan` can write JSON output with severity counts and full event detail:
 
 ```bash
 npx ghostnode scan --mode audit --report ghostnode-report.json -- node app.js
 ```
 
+## Promise
+
+The promise stays simple:
+
+> GhostNode detects sensitive data leaving your Node.js application.
+
 ## Translation Note
 
 Translations are welcome.
 
-The main README stays compact in English, and full translations live under [`docs/i18n/`](https://github.com/darks0l/ghostnode/tree/main/docs/i18n) so the landing page stays clean.
+The main README stays compact in English, and full translations live under [`docs/i18n/`](https://github.com/darks0l/ghostnode/tree/main/docs/i18n).
 
 ## Direction
 
-Next obvious expansions:
+Strong next expansions:
 
 - source-aware leak tracing
-- telemetry and error reporter integrations
-- richer severity policies
+- telemetry and error-reporter integrations
+- richer policy controls and severity thresholds
+- more first-class outbound adapters
 
 > GhostNode
 > Your data was never there.
-
-Built with teeth. 🌑

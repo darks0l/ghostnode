@@ -1,4 +1,5 @@
 import { inspect } from "./core.js";
+import { captureSourceContext } from "./source-context.js";
 
 const LOGGER_METHODS = ["fatal", "error", "warn", "info", "log", "debug", "trace"];
 
@@ -41,6 +42,17 @@ function emitEvent(onEvent, event) {
   }
 }
 
+function withSourceContext(event, options) {
+  if (options.captureSource === false) {
+    return event;
+  }
+
+  return {
+    ...event,
+    sourceContext: captureSourceContext()
+  };
+}
+
 function createMethodProxy(targetLogger, methodName, options, mode) {
   const original = targetLogger[methodName];
   if (typeof original !== "function") {
@@ -57,7 +69,7 @@ function createMethodProxy(targetLogger, methodName, options, mode) {
         findings: inspected.findings,
         action: mode
       };
-      emitEvent(options.onEvent, event);
+      emitEvent(options.onEvent, withSourceContext(event, options));
 
       if (mode === "block") {
         return;
