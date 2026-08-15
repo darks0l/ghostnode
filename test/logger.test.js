@@ -126,3 +126,26 @@ test("createSafeLogger can disable source capture for lower-overhead events", ()
   assert.equal(events.length, 1);
   assert.equal("sourceContext" in events[0], false);
 });
+
+test("createSafeLogger can include sanitized argument previews in events", () => {
+  const events = [];
+  const logger = {
+    info() {}
+  };
+
+  const safeLogger = createSafeLogger(logger, {
+    mode: "audit",
+    includePreview: true,
+    onEvent(event) {
+      events.push(event);
+    }
+  });
+
+  safeLogger.info({ authorization: "Bearer token-value" }, "email john@example.com");
+
+  assert.equal(events.length, 1);
+  assert.deepEqual(events[0].preview.args, [
+    { authorization: "[REDACTED]" },
+    "email [REDACTED]"
+  ]);
+});

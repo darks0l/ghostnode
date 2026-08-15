@@ -2,6 +2,13 @@
 
 All notable changes to `ghostnode` are documented here.
 
+## [0.6.0] - 2026-08-15
+
+### Added
+
+- Added opt-in sanitized event previews via `includePreview: true` so firewall and logger events can include redacted request/argument snapshots without leaking raw secrets.
+- Added source-aware regression coverage for event previews across fetch and logger flows.
+
 ## [0.5.0] - 2026-08-09
 
 ### Added

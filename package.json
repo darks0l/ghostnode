@@ -1,6 +1,6 @@
 {
   "name": "ghostnode",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": false,
   "description": "Privacy firewall for Node.js apps that detects, redacts, or blocks sensitive data before it leaves your process.",
   "license": "MIT",

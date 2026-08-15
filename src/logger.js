@@ -42,13 +42,19 @@ function emitEvent(onEvent, event) {
   }
 }
 
-function withSourceContext(event, options) {
+function withEventMetadata(event, options, preview) {
+  const next = { ...event };
+
+  if (options.includePreview === true) {
+    next.preview = preview;
+  }
+
   if (options.captureSource === false) {
-    return event;
+    return next;
   }
 
   return {
-    ...event,
+    ...next,
     sourceContext: captureSourceContext()
   };
 }
@@ -69,7 +75,9 @@ function createMethodProxy(targetLogger, methodName, options, mode) {
         findings: inspected.findings,
         action: mode
       };
-      emitEvent(options.onEvent, withSourceContext(event, options));
+      emitEvent(options.onEvent, withEventMetadata(event, options, {
+        args: inspected.sanitizedArgs
+      }));
 
       if (mode === "block") {
         return;

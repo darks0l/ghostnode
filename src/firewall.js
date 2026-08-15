@@ -34,13 +34,19 @@ function emitEvent(onEvent, event) {
   }
 }
 
-function withSourceContext(event, options) {
+function withEventMetadata(event, options, preview) {
+  const next = { ...event };
+
+  if (options.includePreview === true) {
+    next.preview = preview;
+  }
+
   if (options.captureSource === false) {
-    return event;
+    return next;
   }
 
   return {
-    ...event,
+    ...next,
     sourceContext: captureSourceContext()
   };
 }
@@ -84,7 +90,9 @@ function installConsoleFirewall(options) {
           findings: inspected.findings,
           action: options.mode
         };
-        emitEvent(options.onEvent, withSourceContext(event, options));
+        emitEvent(options.onEvent, withEventMetadata(event, options, {
+          args: inspected.sanitizedArgs
+        }));
 
         if (options.mode === "block") {
           return;
@@ -122,7 +130,14 @@ function installFetchFirewall(options) {
         findings: dedupeFindings(inspected.findings),
         action: options.mode
       };
-      await emitEvent(options.onEvent, withSourceContext(event, options));
+      await emitEvent(options.onEvent, withEventMetadata(event, options, {
+        request: {
+          method: inspected.method,
+          url: inspected.url,
+          headers: inspected.headers,
+          body: inspected.body
+        }
+      }));
 
       if (options.mode === "block") {
         throw createLeakError(event);

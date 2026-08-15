@@ -160,6 +160,39 @@ test("installGhostNode console events include user-land source context", () => {
   assert.equal(typeof events[0].sourceContext.callsite.column, "number");
 });
 
+test("installGhostNode can include sanitized request previews in events", async () => {
+  const events = [];
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = async () => ({ ok: true, status: 200 });
+
+  installGhostNode({
+    mode: "audit",
+    fetch: true,
+    console: false,
+    includePreview: true,
+    onEvent(event) {
+      events.push(event);
+    }
+  });
+
+  await globalThis.fetch("https://api.example.com?email=john@example.com", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer token-value"
+    },
+    body: JSON.stringify({ password: "super-secret" })
+  });
+
+  assert.equal(events.length, 1);
+  assert.equal(events[0].preview.request.method, "POST");
+  assert.match(events[0].preview.request.url, /%5BREDACTED%5D/);
+  assert.equal(events[0].preview.request.headers.authorization, "[REDACTED]");
+  assert.match(events[0].preview.request.body, /\[REDACTED\]/);
+
+  globalThis.fetch = originalFetch;
+});
+
 test("installGhostNode replaces the previous firewall instead of double-wrapping boundaries", async () => {
   const events = [];
   const calls = [];

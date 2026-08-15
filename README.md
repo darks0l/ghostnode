@@ -35,6 +35,7 @@ import { installGhostNode } from "ghostnode";
 
 installGhostNode({
   mode: "audit",
+  includePreview: true,
   onEvent(event) {
     console.error("GhostNode detected a potential data leak", event);
   }
@@ -127,6 +128,7 @@ Every detection can emit a structured event with:
 - `findings`
 - `severity`
 - `action`
+- optional sanitized `preview` data when `includePreview: true`
 
 That gives you something useful for logging, tests, CI, and incident review instead of a vague boolean.
 

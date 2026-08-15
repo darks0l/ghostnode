@@ -44,6 +44,21 @@ function inspectBody(body, options) {
   }
 
   if (typeof body === "string") {
+    try {
+      const parsed = JSON.parse(body);
+      if (parsed && typeof parsed === "object") {
+        const inspected = inspect(parsed, options);
+        return {
+          value: JSON.stringify(inspected.value),
+          findings: inspected.findings.map((finding) => ({
+            ...finding,
+            path: finding.path ? `body.${finding.path}` : "body"
+          }))
+        };
+      }
+    } catch {
+      // Fall through to plain-text inspection.
+    }
     return inspect(body, options);
   }
 
