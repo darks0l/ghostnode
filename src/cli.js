@@ -43,8 +43,13 @@ function highestSeverity(findings) {
 function buildReport(events) {
   const severityCounts = { high: 0, medium: 0, low: 0 };
   const typeCounts = {};
+  const sourceCounts = {};
 
   for (const event of events) {
+    const sourceLocation = event.sourceLocation ?? event.sourceContext?.summary?.label ?? null;
+    if (sourceLocation) {
+      sourceCounts[sourceLocation] = (sourceCounts[sourceLocation] ?? 0) + 1;
+    }
     const seenEventSeverities = new Set();
     for (const finding of event.findings ?? []) {
       typeCounts[finding.type] = (typeCounts[finding.type] ?? 0) + 1;
@@ -60,8 +65,13 @@ function buildReport(events) {
     totalEvents: events.length,
     severityCounts,
     typeCounts,
+    sourceCounts,
+    topSources: Object.entries(sourceCounts)
+      .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+      .map(([source, count]) => ({ source, count })),
     events: events.map((event) => ({
       ...event,
+      sourceLocation: event.sourceLocation ?? event.sourceContext?.summary?.label ?? null,
       highestSeverity: highestSeverity(event.findings)
     }))
   };
@@ -82,7 +92,7 @@ function summarize(events) {
   for (const event of report.events.slice(0, 10)) {
     const kinds = [...new Set((event.findings ?? []).map((finding) => finding.type))];
     lines.push(
-      `${event.action.toUpperCase()} ${event.highestSeverity.toUpperCase()} ${kinds.join(", ")} -> ${event.destination}`
+      `${event.action.toUpperCase()} ${event.highestSeverity.toUpperCase()} ${kinds.join(", ")} -> ${event.destination}${event.sourceLocation ? ` @ ${event.sourceLocation}` : ""}`
     );
   }
 
@@ -91,6 +101,14 @@ function summarize(events) {
     lines.push("Detected types:");
     for (const [type, count] of Object.entries(report.typeCounts)) {
       lines.push(`- ${type}: ${count}`);
+    }
+  }
+
+  if (report.topSources.length > 0) {
+    lines.push("");
+    lines.push("Source hotspots:");
+    for (const entry of report.topSources.slice(0, 5)) {
+      lines.push(`- ${entry.source}: ${entry.count}`);
     }
   }
 

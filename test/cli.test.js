@@ -48,6 +48,10 @@ test("ghostnode scan writes a JSON report with severity counts", () => {
   assert.equal(report.totalEvents >= 1, true);
   assert.equal(report.severityCounts.high >= 1 || report.severityCounts.medium >= 1, true);
   assert.equal(report.events[0].highestSeverity === "high" || report.events[0].highestSeverity === "medium", true);
+  assert.match(report.events[0].sourceLocation, /fixtures\/cli-leak-script\.js:\d+:\d+$/);
+  assert.equal(Object.keys(report.sourceCounts).length >= 1, true);
+  assert.equal(report.topSources[0].count >= 1, true);
+  assert.match(report.topSources[0].source, /fixtures\/cli-leak-script\.js:\d+:\d+$/);
 
   fs.unlinkSync(reportPath);
 });

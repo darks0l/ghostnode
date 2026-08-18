@@ -25,6 +25,7 @@ test("createSafeLogger audit mode reports findings and allows original log", () 
   assert.equal(events.length, 1);
   assert.equal(events[0].boundary, "logger");
   assert.equal(events[0].action, "audit");
+  assert.match(events[0].sourceLocation, /test\/logger\.test\.js:\d+:\d+$/);
   assert.match(events[0].sourceContext.callsite.file, /logger\.test\.js$/);
   assert.equal(typeof events[0].sourceContext.callsite.line, "number");
 });

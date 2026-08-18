@@ -2,6 +2,14 @@
 
 All notable changes to `ghostnode` are documented here.
 
+## [0.7.0] - 2026-08-18
+
+### Added
+
+- Added concise `sourceLocation` labels on firewall and logger events so callers can identify the user-land callsite without parsing the full stack payload.
+- Added source-aware CLI scan reporting with per-event source locations plus aggregated `sourceCounts` and `topSources` in JSON reports.
+- Added regression coverage for source-aware event metadata and CLI report summaries.
+
 ## [0.6.0] - 2026-08-15
 
 ### Added

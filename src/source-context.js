@@ -1,3 +1,4 @@
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const INTERNAL_FILE_NAMES = [
@@ -52,6 +53,32 @@ function isInternalFrame(frame) {
   return INTERNAL_FILE_NAMES.some((fragment) => frame.file.includes(fragment));
 }
 
+function normalizeDisplayPath(file) {
+  const cwd = process.cwd();
+  const relative = path.relative(cwd, file);
+  const display = relative && !relative.startsWith("..") && !path.isAbsolute(relative)
+    ? relative
+    : file;
+  return display.replace(/\\/g, "/");
+}
+
+function summarizeCallsite(callsite) {
+  if (!callsite) {
+    return null;
+  }
+
+  const file = normalizeDisplayPath(callsite.file);
+  const label = `${file}:${callsite.line}:${callsite.column}`;
+
+  return {
+    file,
+    line: callsite.line,
+    column: callsite.column,
+    frame: callsite.frame,
+    label
+  };
+}
+
 export function captureSourceContext() {
   const stack = new Error().stack;
   if (!stack) {
@@ -71,6 +98,7 @@ export function captureSourceContext() {
 
   return {
     callsite,
-    stack: frames
+    stack: frames,
+    summary: summarizeCallsite(callsite)
   };
 }

@@ -128,13 +128,14 @@ Every detection can emit a structured event with:
 - `findings`
 - `severity`
 - `action`
+- optional `sourceLocation` like `src/server.js:42:17` for fast callsite tracing
 - optional sanitized `preview` data when `includePreview: true`
 
 That gives you something useful for logging, tests, CI, and incident review instead of a vague boolean.
 
 ## Scan Reports
 
-`ghostnode scan` can write JSON output with severity counts and full event detail:
+`ghostnode scan` can write JSON output with severity counts, source hotspots, and full event detail:
 
 ```bash
 npx ghostnode scan --mode audit --report ghostnode-report.json -- node app.js
@@ -156,7 +157,6 @@ The main README stays compact in English, and full translations live under [`doc
 
 Strong next expansions:
 
-- source-aware leak tracing
 - telemetry and error-reporter integrations
 - richer policy controls and severity thresholds
 - more first-class outbound adapters

@@ -53,9 +53,11 @@ function withEventMetadata(event, options, preview) {
     return next;
   }
 
+  const sourceContext = captureSourceContext();
   return {
     ...next,
-    sourceContext: captureSourceContext()
+    ...(sourceContext?.summary?.label ? { sourceLocation: sourceContext.summary.label } : {}),
+    sourceContext
   };
 }
 

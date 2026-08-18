@@ -40,6 +40,7 @@ test("installGhostNode audit mode reports findings and allows original fetch", a
   assert.equal(events.length, 1);
   assert.equal(events[0].boundary, "fetch");
   assert.equal(events[0].action, "audit");
+  assert.match(events[0].sourceLocation, /test\/firewall\.test\.js:\d+:\d+$/);
   assert.match(events[0].sourceContext.callsite.file, /firewall\.test\.js$/);
   assert.equal(typeof events[0].sourceContext.callsite.line, "number");
 
@@ -156,6 +157,7 @@ test("installGhostNode console events include user-land source context", () => {
   fakeConsole.log({ email: "john@example.com" });
 
   assert.equal(events.length, 1);
+  assert.match(events[0].sourceLocation, /test\/firewall\.test\.js:\d+:\d+$/);
   assert.match(events[0].sourceContext.callsite.file, /firewall\.test\.js$/);
   assert.equal(typeof events[0].sourceContext.callsite.column, "number");
 });
